@@ -28,6 +28,9 @@ loadEventListeners()
 //load all event listeners function
 //The form listens out for a "submit" event and performs the addTask function once the event is triggered
 function loadEventListeners(){
+
+    //DOMload event
+    document.addEventListener('DOMContentLoaded', getTasks);
     //add task event
     form.addEventListener('submit', addTask);
 
@@ -40,6 +43,49 @@ function loadEventListeners(){
     //filter events
     filter.addEventListener('keyup', filterTasks);
 }
+
+// get tasks from LS
+
+function getTasks(){
+    let tasks;
+    if(localStorage.getItem('tasks') === null){
+        tasks=[];
+    }else{
+        tasks =JSON.parse(localStorage.getItem('tasks'));
+    }
+
+
+    tasks.forEach(function(task){
+        const li = document.createElement('li');
+
+    //add a class name to new li item of collection-item
+        li.className='collection-item';
+
+        //create a textnode and append to li
+
+        li.appendChild(document.createTextNode(task));
+    
+        //create a new link for x button to appear 
+
+        const link = document.createElement('a');
+
+        // //add class name
+        link.className ='delete-item secondary-content';
+
+        // //add icon html 
+        link.innerHTML ='<i class="fas fa-trash"></i>';
+
+        //append link to li
+        li.appendChild(link);
+
+        //append li to ul
+        taskList.appendChild(li);
+
+
+    });
+}
+
+
 
 /*concerns everything that will happen once we click submit on the form. 
 First - we handle the exception of if someone forgets to add a task and 
@@ -96,6 +142,13 @@ function addTask(e){
 
     taskList.appendChild(li);
     }
+
+
+    //Store in local storage
+    storeTaskInLocalStorage(taskInput.value);
+
+
+
     //clear input
     taskInput.value = '';
 
@@ -103,17 +156,61 @@ function addTask(e){
     e.preventDefault();
 }
 
+function storeTaskInLocalStorage(task){
+    let tasks;
+    if(localStorage.getItem('tasks') === null){
+        tasks=[];
+    }else{
+        tasks =JSON.parse(localStorage.getItem('tasks'));
+    }
+//stop empty tasks from being saved to LS
+
+    if(task !== ''){
+        tasks.push(task);
+    }
+
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
 //Remove task when the x link is clicked on each li that is generated
 //but first confirm that the user is OK with deleting
 function removeTask(e){
-    if(e.target.parentElement.classList.contains('delete-item')){
+    if(e.target.parentElement.classList.contains('delete-item'))
+    {
         if(confirm('Are you sure you want to delete this?')){
             e.target.parentElement.parentElement.remove();
+
+            //remove from LS
+
+            removeTaskFromLocalStorage
+            (e.target.parentElement.parentElement);
 
         }
       
     }
 }
+
+//remove from LS
+
+function removeTaskFromLocalStorage(taskItem){
+    let tasks;
+    if(localStorage.getItem('tasks') === null){
+        tasks=[];
+    }else{
+        tasks =JSON.parse(localStorage.getItem('tasks'));
+    }
+
+
+    tasks.forEach(function(task, index){
+        if(taskItem.textContent === task){
+            tasks.splice(index, 1);
+        }
+        
+        });
+
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+   
 
 
 //clear all tasks whent the black button is clicked
@@ -124,7 +221,17 @@ function clearTasks(e){
 
         taskList.innerHTML ='';
     }
-}
+
+
+        //clear tasks from LS
+
+        clearTasksFromLocalStorage()
+    }
+
+    function clearTasksFromLocalStorage(){
+        localStorage.clear();
+    }
+
 
     /*Does the same thing as above, but faster. This basically says, 
     "hey, I'm grabbing the first child of all elements within the ul,
@@ -158,6 +265,3 @@ function filterTasks(e){
 
     });
 }
-
-
-
